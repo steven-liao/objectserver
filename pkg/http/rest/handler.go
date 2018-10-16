@@ -18,7 +18,7 @@ import (
 	//minio "github.com/minio/minio-go"
 )
 
-var minioClient minio
+var minioClient *minio.Client
 var location = "us-east-1"
 
 func Init() {
@@ -27,7 +27,8 @@ func Init() {
 	secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
 	useSSL := true
 
-	minioClient, err := minio.New(endpoint, accessKeyID, secretAccessKey, useSSL)
+	var err error
+	minioClient, err = minio.New(endpoint, accessKeyID, secretAccessKey, useSSL)
 	if err != nil {
 		log.Fatalln(err)
 		return
@@ -52,23 +53,23 @@ func Handler() http.Handler {
 
 	// bucket api
 	r.HandleFunc("/buckets", allBuckets).Methods("GET")             // get bucket list
-	r.HandleFunc("/buckets/{name}", createBucket).Methods("POST")   // create bucket
+	r.HandleFunc("/bucket", createBucket).Methods("POST")           // create bucket
 	r.HandleFunc("/buckets/{name}", updateBucket).Methods("PUT")    // update bucket
 	r.HandleFunc("/buckets/{name}", deleteBucket).Methods("DELETE") // delete bucket
 	r.HandleFunc("/buckets/{name}", listBucket).Methods("GET")      // list bucket items
 
 	// object api
-	//r.HandleFunc("/object/{bucket}/{object}", allImagesEndPoint).Methods("GET")
-	r.HandleFunc("/object/{bucket}/{object}", createObject).Methods("POST")
-	r.HandleFunc("/object/{bucket}/{object}", updateObject).Methods("PUT")
-	r.HandleFunc("/object/{bucket}/{object}", deleteObject).Methods("DELETE")
-	r.HandleFunc("/object/{bucket}/{object}", findObject).Methods("GET")
+	r.HandleFunc("/bucket/{bucketname}", allObjects).Methods("GET")
+	r.HandleFunc("/bucket/{bucketname}/object", createObject).Methods("POST")
+	r.HandleFunc("/bucket/{bucketname}/objects/{objectname}", updateObject).Methods("PUT")
+	r.HandleFunc("/bucket/{bucketname}/objects/{objectname}", deleteObject).Methods("DELETE")
+	r.HandleFunc("/bucket/{bucketname}/objects/{objectname}", findObject).Methods("GET")
 
 	return r
 }
 
 func allBuckets(w http.ResponseWriter, r *http.Request) {
-	buckets, err := minioClient.ListBucket()
+	buckets, err := minioClient.ListBuckets()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -85,7 +86,7 @@ func createBucket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, image)
+	respondWithJson(w, http.StatusCreated, nil)
 }
 
 func updateBucket(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +124,7 @@ func listBucket(w http.ResponseWriter, r *http.Request) {
 	//		respondWithError(w, http.StatusBadRequest, "Invalid image ID")
 	//		return
 	//	}
-	respondWithJson(w, http.StatusOK, image)
+	respondWithJson(w, http.StatusOK, nil)
 }
 
 func createObject(w http.ResponseWriter, r *http.Request) {
@@ -141,7 +142,7 @@ func createObject(w http.ResponseWriter, r *http.Request) {
 	//		return
 	//	}
 
-	respondWithJson(w, http.StatusCreated, image)
+	respondWithJson(w, http.StatusCreated, nil)
 }
 
 func updateObject(w http.ResponseWriter, r *http.Request) {
@@ -179,5 +180,25 @@ func listObject(w http.ResponseWriter, r *http.Request) {
 	//		respondWithError(w, http.StatusBadRequest, "Invalid image ID")
 	///		return
 	//	}
-	respondWithJson(w, http.StatusOK, image)
+	respondWithJson(w, http.StatusOK, nil)
+}
+
+func findObject(w http.ResponseWriter, r *http.Request) {
+	//	params := mux.Vars(r)
+	//	image, err := da.FindById(params["id"])
+	//	if err != nil {
+	//		respondWithError(w, http.StatusBadRequest, "Invalid image ID")
+	///		return
+	//	}
+	respondWithJson(w, http.StatusOK, nil)
+}
+
+func allObjects(w http.ResponseWriter, r *http.Request) {
+	//	params := mux.Vars(r)
+	//	image, err := da.FindById(params["id"])
+	//	if err != nil {
+	//		respondWithError(w, http.StatusBadRequest, "Invalid image ID")
+	///		return
+	//	}
+	respondWithJson(w, http.StatusOK, nil)
 }
