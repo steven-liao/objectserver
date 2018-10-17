@@ -21,6 +21,10 @@ import (
 var minioClient *minio.Client
 var location = "us-east-1"
 
+type Bucket struct {
+	BucketName string `json:"bucket_name"`
+}
+
 func Init() {
 	endpoint := "play.minio.io:9000"
 	accessKeyID := "Q3AM3UQ867SPQQA43P2F"
@@ -79,9 +83,19 @@ func allBuckets(w http.ResponseWriter, r *http.Request) {
 }
 
 func createBucket(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	bucketName := params["bucket"]
-	if err := minioClient.MakeBucket(bucketName, location); err != nil {
+	//params := mux.Vars(r)
+	//bucketName := params["bucketname"]
+
+	defer r.Body.Close()
+	var bucket Bucket
+
+	log.Printf("createBucket request body: %s", r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&bucket); err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := minioClient.MakeBucket(bucket.BucketName, location); err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -104,16 +118,13 @@ func updateBucket(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteBucket(w http.ResponseWriter, r *http.Request) {
-	//	defer r.Body.Close()
-	//	var image models.Image
-	//	if err := json.NewDecoder(r.Body).Decode(&image); err != nil {
-	//		respondWithError(w, http.StatusBadRequest, err.Error())
-	//		return
-	//	}
-	//	if err := da.Delete(image); err != nil {
-	//		respondWithError(w, http.StatusInternalServerError, err.Error())
-	//		return
-	//	}
+	defer r.Body.Close()
+	params := mux.Vars(r)
+
+	if err := minioClient.RemoveBucket(params["name"]); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid bucket name")
+		return
+	}
 	respondWithJson(w, http.StatusOK, map[string]string{"result": "success"})
 }
 
