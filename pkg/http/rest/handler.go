@@ -79,8 +79,9 @@ func allBuckets(w http.ResponseWriter, r *http.Request) {
 }
 
 func createBucket(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	bucketName := params["bucket"]
+	//params := mux.Vars(r)
+	//bucketName := params["bucket"]
+
 	if err := minioClient.MakeBucket(bucketName, location); err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
 		return
