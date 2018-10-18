@@ -3,7 +3,6 @@ FROM golang:1.11.1-alpine
 # Install tools required for project
 # Run `docker build --no-cache .` to update dependencies
 RUN apk add --no-cache git
-RUN alias go='http_proxy=http://ctu-net-mwg:3128 https_proxy=http://ctu-net-mwg:312 no_proxy=localhost,127.0.0.0/8,::1 go'
 RUN go get github.com/golang/dep/cmd/dep
 
 # List project dependencies with Gopkg.toml and Gopkg.lock
