@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
 	//	"net/http"
 
@@ -21,24 +22,32 @@ import (
 var minioClient *minio.Client
 var location = "us-east-1"
 
+//var location = ""
+
 type Bucket struct {
 	BucketName string `json:"bucket_name"`
 }
 
 func Init() {
-	endpoint := "play.minio.io:9000"
-	accessKeyID := "Q3AM3UQ867SPQQA43P2F"
-	secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-	useSSL := true
+	//endpoint := "play.minio.io:9000"
+	endpoint := "localhost:9000"
+	//accessKeyID := "Q3AM3UQ867SPQQA43P2F"
+	//secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+
+	accessKeyID := os.Getenv("MINIO_ACCESS_KEY_FILE")
+	secretAccessKey := os.Getenv("MINIO_SECRET_KEY_FILE")
+
+	useSSL := false
 
 	var err error
 	minioClient, err = minio.New(endpoint, accessKeyID, secretAccessKey, useSSL)
 	if err != nil {
+		log.Printf("connect to minio fail: %s", err.Error())
 		log.Fatalln(err)
 		return
 	}
 
-	log.Printf("%#v\n", minioClient)
+	log.Printf("connect to minio%s\n", minioClient)
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
@@ -90,13 +99,18 @@ func createBucket(w http.ResponseWriter, r *http.Request) {
 	var bucket Bucket
 
 	log.Printf("createBucket request body: %s", r.Body)
+
 	if err := json.NewDecoder(r.Body).Decode(&bucket); err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
+		log.Printf("createBucket deoce error")
 		return
 	}
 
+	log.Printf("createBucket: %s", bucket.BucketName)
+
 	if err := minioClient.MakeBucket(bucket.BucketName, location); err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
+		log.Printf("createBucket MakeBucket err: %s", err.Error())
 		return
 	}
 
