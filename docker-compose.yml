@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   web:
     build: .
@@ -6,6 +6,11 @@ services:
      - "8989:8080"
     depends_on:
      - minio
+    environment:
+      MINIO_LOCATION: us-east-1
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
   minio:
     image: minio/minio:RELEASE.2018-10-18T00-28-58Z
     hostname: minio
@@ -17,6 +22,15 @@ services:
     command: server /data
     ports:
      - "9000:9000"
+    secrets:
+     - secret_key
+     - access_key
 
 volumes:
   data1:
+
+secrets:
+  secret_key:
+    external: true
+  access_key:
+    external: true

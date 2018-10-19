@@ -20,7 +20,7 @@ import (
 )
 
 var minioClient *minio.Client
-var location = "us-east-1"
+var location string
 
 //var location = ""
 
@@ -30,12 +30,13 @@ type Bucket struct {
 
 func Init() {
 	//endpoint := "play.minio.io:9000"
-	endpoint := "localhost:9000"
+	location := os.Getenv("MINIO_LOCATION")
+	endpoint := os.Getenv("MINIO_ENDPOINT")
 	//accessKeyID := "Q3AM3UQ867SPQQA43P2F"
 	//secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
 
-	accessKeyID := os.Getenv("MINIO_ACCESS_KEY_FILE")
-	secretAccessKey := os.Getenv("MINIO_SECRET_KEY_FILE")
+	accessKeyID := os.Getenv("MINIO_ACCESS_KEY")
+	secretAccessKey := os.Getenv("MINIO_SECRET_KEY")
 
 	useSSL := false
 
@@ -47,7 +48,7 @@ func Init() {
 		return
 	}
 
-	log.Printf("connect to minio%s\n", minioClient)
+	log.Printf("connect to minio: location[%s] endpoint[%s] access[%s] secret[%s]\n", location, endpoint, accessKeyID, secretAccessKey)
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
